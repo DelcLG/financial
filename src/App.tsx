@@ -1,31 +1,58 @@
-import React, { useState } from 'react';
+// src/App.tsx
+
+// 1. Les importations sont TOUT EN HAUT du fichier.
+// On ajoute aussi useEffect pour la persistance des données.
+import React, { useState, useEffect } from 'react';
+
+// 2. L'interface définit la "forme" d'une transaction.
+// C'est une bonne pratique pour la clarté et la sécurité du code.
+interface Transaction {
+  id: number;
+  description: string;
+  amount: number;
+}
 
 // Composant principal de l'application
 function App() {
-  // État pour stocker les transactions (description, montant, type)
-  // 'id' est ajouté pour aider React à identifier chaque élément de manière unique lors du rendu de listes
-  const [transactions, setTransactions] = useState([]);
-  // État pour le champ de description de la nouvelle transaction
+  // 3. On charge les transactions depuis le localStorage au démarrage.
+  // La fonction à l'intérieur de useState ne s'exécute qu'une seule fois.
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    try {
+      const savedTransactions = localStorage.getItem('transactions');
+      return savedTransactions ? JSON.parse(savedTransactions) : [];
+    } catch (error) {
+      console.error("Impossible de lire les transactions depuis le localStorage", error);
+      return [];
+    }
+  });
+
+  // État pour les champs du formulaire
   const [description, setDescription] = useState('');
-  // État pour le champ du montant de la nouvelle transaction
   const [amount, setAmount] = useState('');
 
+  // 4. Ce "useEffect" s'exécute chaque fois que la liste `transactions` change,
+  // et il sauvegarde la nouvelle liste dans le localStorage.
+  useEffect(() => {
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+  }, [transactions]);
+
+
   // Fonction pour ajouter une nouvelle transaction
-  const addTransaction = (e) => {
-    e.preventDefault(); // Empêche le rechargement de la page lors de la soumission du formulaire
+  const addTransaction = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // Empêche le rechargement de la page
 
     // Vérifie si la description et le montant sont valides
-    if (!description.trim() || isNaN(parseFloat(amount))) {
-      alert('Veuillez entrer une description valide et un montant numérique.'); // Utilise une alerte simple pour l'exemple
+    const numericAmount = parseFloat(amount);
+    if (!description.trim() || isNaN(numericAmount)) {
+      alert('Veuillez entrer une description valide et un montant numérique.');
       return;
     }
 
     // Crée un nouvel objet transaction
-    const newTransaction = {
+    const newTransaction: Transaction = {
       id: Date.now(), // ID unique basé sur l'horodatage
       description: description.trim(),
-      amount: parseFloat(amount),
-      // Le type (dépense ou revenu) est implicite par le signe du montant
+      amount: numericAmount,
     };
 
     // Ajoute la nouvelle transaction à la liste existante
@@ -44,6 +71,7 @@ function App() {
     );
   };
 
+  // Le reste est votre JSX pour l'affichage. Il est déjà très bien !
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 font-sans">
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
@@ -51,7 +79,6 @@ function App() {
           Mon Budget
         </h1>
 
-        {/* Section du solde total */}
         <div className="mb-6 bg-blue-50 p-4 rounded-lg">
           <h2 className="text-lg font-semibold text-gray-700">Solde actuel:</h2>
           <p
@@ -63,7 +90,6 @@ function App() {
           </p>
         </div>
 
-        {/* Formulaire pour ajouter une transaction */}
         <form onSubmit={addTransaction} className="space-y-4 mb-8">
           <h2 className="text-xl font-semibold text-gray-800">
             Ajouter une nouvelle transaction
@@ -98,7 +124,7 @@ function App() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Ex: -50.00 ou 1200.00"
-              step="0.01" // Permet les valeurs décimales
+              step="0.01"
             />
           </div>
           <button
@@ -109,7 +135,6 @@ function App() {
           </button>
         </form>
 
-        {/* Liste des transactions */}
         <div>
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
             Historique des transactions

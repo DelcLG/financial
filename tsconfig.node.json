@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true, // Ajouté pour corriger tsBuildInfoFile
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "ES2023",
     "lib": ["ES2023"],
@@ -17,9 +18,8 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noFallthroughCasesInSwitch": true
+     // "noUncheckedSideEffectImports": true a été supprimé
   },
   "include": ["vite.config.ts"]
 }
